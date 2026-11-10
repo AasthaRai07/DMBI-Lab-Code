@@ -22,7 +22,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, export_text
 
 RS = 42  # fixed seed for reproducibility
-OUT = "output"
+OUT = "outputs"
 os.makedirs(OUT, exist_ok=True)
 
 

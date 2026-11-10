@@ -1,0 +1,13 @@
+{
+  "source": "CA2 run output, as reported in the CA2 report (not regenerated from the dataset in this repo)",
+  "rows_original": 29332,
+  "feature_columns": 86,
+  "missing_values": 0,
+  "duplicate_rows": 21841,
+  "rows_after_dedup": 7491,
+  "class_counts_original": {"0": 14632, "1": 14700},
+  "class_counts_after_dedup": {"0": 4867, "1": 2624},
+  "test_set": {"size": 2248, "benign": 1461, "malware": 787},
+  "Decision Tree": {"accuracy": 0.8817, "precision": 0.8212, "recall": 0.8463, "f1": 0.8335, "roc_auc": 0.879, "false_negatives": 121, "false_positives": 145},
+  "Random Forest": {"accuracy": 0.9284, "precision": 0.8883, "recall": 0.9098, "f1": 0.8989, "roc_auc": 0.977, "false_negatives": 71, "false_positives": 90}
+}
