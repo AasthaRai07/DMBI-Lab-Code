@@ -78,10 +78,17 @@ The `_report` suffix marks figures taken from the CA2 report. Running the pipeli
 
 ## How to Run
 
+### 1. Run Pipeline
 ```bash
 pip install -r requirements.txt
 python3 src/ca2_pipeline.py naticusdroid.csv
 ```
+
+### 2. Launch Interactive Web Dashboard
+```bash
+python app.py
+```
+Open **http://localhost:5000** in your browser to view the interactive performance dashboard, visualizations gallery, decision tree rules, and live permission-risk scanner (or open `dashboard.html` directly).
 
 The Experiment 10 steps are in `experiments/exp10/exp10_android_malware.py`. Run it from the folder that contains `naticusdroid.csv`.
 

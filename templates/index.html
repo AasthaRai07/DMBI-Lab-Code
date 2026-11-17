@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Android Malware Detection - DMBI Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: radial-gradient(circle at 15% 15%, #0f172a 0%, #090d16 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+    }
+    .glass-card:hover {
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.4);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.6);
+    }
+  </style>
+</head>
+<body class="font-sans antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <i data-lucide="shield-alert" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+            Android Malware Detection System
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">UCI NATICUSdroid</span>
+          </h1>
+          <p class="text-xs text-slate-400">Data Mining & Business Intelligence (DMBI CA2 / Exp 10)</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="hidden md:flex items-center space-x-1">
+        <button onclick="switchTab('metrics-tab')" id="nav-metrics-tab" class="tab-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-emerald-400 bg-slate-800 border border-emerald-500/30 flex items-center gap-1.5 transition">
+          <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i> Performance
+        </button>
+        <button onclick="switchTab('gallery-tab')" id="nav-gallery-tab" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 flex items-center gap-1.5 transition">
+          <i data-lucide="image" class="w-3.5 h-3.5"></i> Visualizations
+        </button>
+        <button onclick="switchTab('rules-tab')" id="nav-rules-tab" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 flex items-center gap-1.5 transition">
+          <i data-lucide="git-branch" class="w-3.5 h-3.5"></i> Tree Rules
+        </button>
+        <button onclick="switchTab('scanner-tab')" id="nav-scanner-tab" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 flex items-center gap-1.5 transition">
+          <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Live App Scanner
+        </button>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-1 rounded-full">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Pipeline Ready
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Tabs -->
+  <div class="md:hidden flex overflow-x-auto px-4 py-2 border-b border-slate-800 bg-slate-900/60 gap-2">
+    <button onclick="switchTab('metrics-tab')" class="px-3 py-1 text-xs rounded-lg bg-slate-800 text-white whitespace-nowrap">Performance</button>
+    <button onclick="switchTab('gallery-tab')" class="px-3 py-1 text-xs rounded-lg text-slate-400 whitespace-nowrap">Visualizations</button>
+    <button onclick="switchTab('rules-tab')" class="px-3 py-1 text-xs rounded-lg text-slate-400 whitespace-nowrap">Tree Rules</button>
+    <button onclick="switchTab('scanner-tab')" class="px-3 py-1 text-xs rounded-lg text-slate-400 whitespace-nowrap">Scanner</button>
+  </div>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Hero / Objective Overview -->
+    <section class="glass-card rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+      <div class="absolute -right-16 -top-16 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="max-w-3xl space-y-3">
+        <div class="flex items-center gap-2 text-xs font-semibold text-emerald-400 uppercase tracking-wider">
+          <i data-lucide="zap" class="w-4 h-4"></i>
+          Automated Permission-Based Triage
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          Android Malware Screening via Permission Signatures
+        </h2>
+        <p class="text-sm text-slate-300 leading-relaxed">
+          Triage Android applications at scale prior to expensive bytecode de-compilation. Built with NATICUSdroid dataset (29,332 apps, 86 permission vectors). Strict deduplication (removing 21,841 duplicate profiles) eliminates training-test leakage for unbiased real-world generalization.
+        </p>
+        <div class="pt-2 flex flex-wrap gap-2 text-xs">
+          <span class="px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700 text-slate-300 font-mono">Dataset: 29,332 apps</span>
+          <span class="px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700 text-slate-300 font-mono">Clean Deduplicated: 7,491 apps</span>
+          <span class="px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700 text-slate-300 font-mono">Stratified Split: 70/30 (2,248 test)</span>
+          <span class="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono">Primary Objective: Malware Recall</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: METRICS & PERFORMANCE -->
+    <div id="metrics-tab" class="tab-content space-y-8">
+      <!-- KPI Cards Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        <div class="glass-card rounded-xl p-5 space-y-2">
+          <div class="flex items-center justify-between text-xs font-medium text-slate-400">
+            <span>Random Forest Accuracy</span>
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+          </div>
+          <div class="text-2xl sm:text-3xl font-bold text-white font-mono">92.84%</div>
+          <div class="text-xs text-emerald-400 flex items-center gap-1">
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            +27.84% over 65% baseline
+          </div>
+        </div>
+
+        <div class="glass-card rounded-xl p-5 space-y-2">
+          <div class="flex items-center justify-between text-xs font-medium text-slate-400">
+            <span>Malware Recall (Sensitivity)</span>
+            <i data-lucide="target" class="w-4 h-4 text-emerald-400"></i>
+          </div>
+          <div class="text-2xl sm:text-3xl font-bold text-emerald-400 font-mono">90.98%</div>
+          <div class="text-xs text-slate-300">
+            Catches 716 of 787 threats
+          </div>
+        </div>
+
+        <div class="glass-card rounded-xl p-5 space-y-2">
+          <div class="flex items-center justify-between text-xs font-medium text-slate-400">
+            <span>ROC-AUC Score</span>
+            <i data-lucide="trending-up" class="w-4 h-4 text-blue-400"></i>
+          </div>
+          <div class="text-2xl sm:text-3xl font-bold text-white font-mono">0.9775</div>
+          <div class="text-xs text-slate-400">
+            Exceptional class separation
+          </div>
+        </div>
+
+        <div class="glass-card rounded-xl p-5 space-y-2">
+          <div class="flex items-center justify-between text-xs font-medium text-slate-400">
+            <span>Precision & False Alarms</span>
+            <i data-lucide="shield-check" class="w-4 h-4 text-teal-400"></i>
+          </div>
+          <div class="text-2xl sm:text-3xl font-bold text-white font-mono">88.83%</div>
+          <div class="text-xs text-slate-400">
+            Only 90 false alarms / 1,461
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparative Performance Table -->
+      <div class="glass-card rounded-2xl overflow-hidden border border-slate-800">
+        <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-semibold text-white">Model Comparison on Test Set (2,248 Apps)</h3>
+            <p class="text-xs text-slate-400">Trained on 5,243 clean apps with fixed seed 42</p>
+          </div>
+          <span class="text-xs font-mono px-2 py-1 rounded bg-slate-800 text-slate-300">Test Size: 30%</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs sm:text-sm">
+            <thead class="bg-slate-900/80 text-slate-400 uppercase font-mono text-[11px] tracking-wider border-b border-slate-800">
+              <tr>
+                <th class="px-6 py-3.5">Model / Strategy</th>
+                <th class="px-6 py-3.5">Accuracy</th>
+                <th class="px-6 py-3.5">Precision</th>
+                <th class="px-6 py-3.5">Recall</th>
+                <th class="px-6 py-3.5">F1-Score</th>
+                <th class="px-6 py-3.5">ROC-AUC</th>
+                <th class="px-6 py-3.5">Missed Malware (FN)</th>
+                <th class="px-6 py-3.5">False Alarms (FP)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800 font-mono">
+              <tr class="hover:bg-slate-800/30 transition">
+                <td class="px-6 py-4 font-sans font-medium text-slate-300 flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+                  Majority Class Baseline (Zero-R)
+                </td>
+                <td class="px-6 py-4 text-slate-400">0.6500</td>
+                <td class="px-6 py-4 text-slate-400">0.0000</td>
+                <td class="px-6 py-4 text-slate-400">0.0000</td>
+                <td class="px-6 py-4 text-slate-400">0.0000</td>
+                <td class="px-6 py-4 text-slate-400">0.5000</td>
+                <td class="px-6 py-4 text-rose-400 font-bold">787 of 787 (100%)</td>
+                <td class="px-6 py-4 text-emerald-400">0</td>
+              </tr>
+              <tr class="hover:bg-slate-800/30 transition">
+                <td class="px-6 py-4 font-sans font-medium text-slate-200 flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                  Decision Tree (Gini Criterion)
+                </td>
+                <td class="px-6 py-4 text-slate-200">0.8817</td>
+                <td class="px-6 py-4 text-slate-200">0.8212</td>
+                <td class="px-6 py-4 text-slate-200">0.8463</td>
+                <td class="px-6 py-4 text-slate-200">0.8335</td>
+                <td class="px-6 py-4 text-slate-200">0.8794</td>
+                <td class="px-6 py-4 text-amber-400">121 of 787</td>
+                <td class="px-6 py-4 text-slate-300">145 of 1,461</td>
+              </tr>
+              <tr class="bg-emerald-950/20 hover:bg-emerald-950/30 transition border-l-4 border-l-emerald-500">
+                <td class="px-6 py-4 font-sans font-semibold text-emerald-300 flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  Random Forest (100 Trees) ★
+                </td>
+                <td class="px-6 py-4 text-emerald-300 font-bold">0.9284</td>
+                <td class="px-6 py-4 text-emerald-300 font-bold">0.8883</td>
+                <td class="px-6 py-4 text-emerald-300 font-bold">0.9098</td>
+                <td class="px-6 py-4 text-emerald-300 font-bold">0.8989</td>
+                <td class="px-6 py-4 text-emerald-300 font-bold">0.9775</td>
+                <td class="px-6 py-4 text-emerald-300 font-bold">71 of 787 (-41%)</td>
+                <td class="px-6 py-4 text-emerald-300 font-bold">90 of 1,461 (-38%)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="px-6 py-3.5 bg-slate-900/60 border-t border-slate-800 text-xs text-slate-400 flex flex-wrap items-center justify-between gap-2">
+          <span>* High recall protects the enterprise by minimizing unreviewed malicious apps.</span>
+          <span class="text-emerald-400 font-medium">Random Forest is optimal across all statistical dimensions.</span>
+        </div>
+      </div>
+
+      <!-- Feature Importance Summary Card -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="glass-card rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold text-white flex items-center gap-2">
+              <i data-lucide="key" class="w-4 h-4 text-emerald-400"></i>
+              Top 5 Discriminative Permissions
+            </h3>
+            <span class="text-xs text-slate-400">Mean Decrease Impurity</span>
+          </div>
+          <div class="space-y-3 font-mono text-xs">
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-slate-200">READ_PHONE_STATE</span>
+                <span class="text-emerald-400 font-bold">19.02%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-2">
+                <div class="bg-emerald-500 h-2 rounded-full" style="width: 19.02%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-slate-200">c2dm.permission.RECEIVE</span>
+                <span class="text-emerald-400 font-bold">13.64%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-2">
+                <div class="bg-teal-400 h-2 rounded-full" style="width: 13.64%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-slate-200">INSTALL_SHORTCUT</span>
+                <span class="text-emerald-400 font-bold">9.18%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-2">
+                <div class="bg-blue-400 h-2 rounded-full" style="width: 9.18%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-slate-200">READ_EXTERNAL_STORAGE</span>
+                <span class="text-emerald-400 font-bold">4.38%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-2">
+                <div class="bg-indigo-400 h-2 rounded-full" style="width: 4.38%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-slate-200">com.android.vending.BILLING</span>
+                <span class="text-emerald-400 font-bold">4.26%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-2">
+                <div class="bg-amber-400 h-2 rounded-full" style="width: 4.26%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Practical Business Workflow -->
+        <div class="glass-card rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold text-white flex items-center gap-2">
+              <i data-lucide="layers" class="w-4 h-4 text-emerald-400"></i>
+              Operational Security Pipeline
+            </h3>
+            <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Stage 1 Filter</span>
+          </div>
+          <div class="space-y-3 text-xs text-slate-300">
+            <div class="p-3 rounded-lg bg-slate-800/60 border border-slate-700/60 flex items-start gap-3">
+              <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center shrink-0">1</span>
+              <div>
+                <p class="font-semibold text-white">Ingest App Manifest (Instant)</p>
+                <p class="text-slate-400 mt-0.5">Extract requested permission declarations in milliseconds with zero execution overhead.</p>
+              </div>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-800/60 border border-slate-700/60 flex items-start gap-3">
+              <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center shrink-0">2</span>
+              <div>
+                <p class="font-semibold text-white">Random Forest Risk Ranking</p>
+                <p class="text-slate-400 mt-0.5">Sort incoming apps by continuous suspicion probability score to prioritize analyst review queue.</p>
+              </div>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-800/60 border border-slate-700/60 flex items-start gap-3">
+              <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center shrink-0">3</span>
+              <div>
+                <p class="font-semibold text-white">Explainable Decision Tree Audit</p>
+                <p class="text-slate-400 mt-0.5">Validate flags using deterministic if-then branching rules before deep static/dynamic code analysis.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: VISUALIZATIONS GALLERY -->
+    <div id="gallery-tab" class="tab-content hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-white">Generated Visualizations & Figures</h2>
+          <p class="text-xs text-slate-400">High-resolution plots generated directly by the DMBI pipeline</p>
+        </div>
+        <span class="text-xs text-slate-400">Click any figure to expand</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Fig 1 -->
+        <div class="glass-card rounded-xl overflow-hidden cursor-pointer group" onclick="openLightbox('/outputs/fig1_class_distribution.png', 'Class Distribution: Original vs Deduplicated')">
+          <div class="h-48 overflow-hidden bg-slate-900 flex items-center justify-center relative">
+            <img src="/outputs/fig1_class_distribution.png" alt="Class Distribution" class="w-full h-full object-contain group-hover:scale-105 transition duration-300">
+            <div class="absolute inset-0 bg-slate-950/20 group-hover:bg-transparent transition"></div>
+            <span class="absolute bottom-2 right-2 bg-slate-950/80 px-2 py-1 rounded text-[10px] font-mono text-slate-300">Fig 1</span>
+          </div>
+          <div class="p-4 space-y-1">
+            <h4 class="text-sm font-semibold text-white group-hover:text-emerald-400 transition">Class Distribution</h4>
+            <p class="text-xs text-slate-400">Comparison of class counts before (29,332 apps) and after removing 21,841 duplicates.</p>
+          </div>
+        </div>
+
+        <!-- Fig 2 -->
+        <div class="glass-card rounded-xl overflow-hidden cursor-pointer group" onclick="openLightbox('/outputs/fig2_confusion_matrices.png', 'Confusion Matrices: Test Set')">
+          <div class="h-48 overflow-hidden bg-slate-900 flex items-center justify-center relative">
+            <img src="/outputs/fig2_confusion_matrices.png" alt="Confusion Matrices" class="w-full h-full object-contain group-hover:scale-105 transition duration-300">
+            <div class="absolute inset-0 bg-slate-950/20 group-hover:bg-transparent transition"></div>
+            <span class="absolute bottom-2 right-2 bg-slate-950/80 px-2 py-1 rounded text-[10px] font-mono text-slate-300">Fig 2</span>
+          </div>
+          <div class="p-4 space-y-1">
+            <h4 class="text-sm font-semibold text-white group-hover:text-emerald-400 transition">Confusion Matrices</h4>
+            <p class="text-xs text-slate-400">Direct comparison of True Negatives, False Positives, False Negatives, and True Positives.</p>
+          </div>
+        </div>
+
+        <!-- Fig 3 -->
+        <div class="glass-card rounded-xl overflow-hidden cursor-pointer group" onclick="openLightbox('/outputs/fig3_feature_importance.png', 'Random Forest: Top 10 Features')">
+          <div class="h-48 overflow-hidden bg-slate-900 flex items-center justify-center relative">
+            <img src="/outputs/fig3_feature_importance.png" alt="Feature Importance" class="w-full h-full object-contain group-hover:scale-105 transition duration-300">
+            <div class="absolute inset-0 bg-slate-950/20 group-hover:bg-transparent transition"></div>
+            <span class="absolute bottom-2 right-2 bg-slate-950/80 px-2 py-1 rounded text-[10px] font-mono text-slate-300">Fig 3</span>
+          </div>
+          <div class="p-4 space-y-1">
+            <h4 class="text-sm font-semibold text-white group-hover:text-emerald-400 transition">Feature Importance</h4>
+            <p class="text-xs text-slate-400">Top 10 permissions by Gini decrease in impurity, highlighting phone state and cloud messaging.</p>
+          </div>
+        </div>
+
+        <!-- Fig 4 -->
+        <div class="glass-card rounded-xl overflow-hidden cursor-pointer group" onclick="openLightbox('/outputs/fig4_roc_curves_report.png', 'Test Set ROC Curves')">
+          <div class="h-48 overflow-hidden bg-slate-900 flex items-center justify-center relative">
+            <img src="/outputs/fig4_roc_curves_report.png" alt="ROC Curves" class="w-full h-full object-contain group-hover:scale-105 transition duration-300">
+            <div class="absolute inset-0 bg-slate-950/20 group-hover:bg-transparent transition"></div>
+            <span class="absolute bottom-2 right-2 bg-slate-950/80 px-2 py-1 rounded text-[10px] font-mono text-slate-300">Fig 4</span>
+          </div>
+          <div class="p-4 space-y-1">
+            <h4 class="text-sm font-semibold text-white group-hover:text-emerald-400 transition">ROC Curves Comparison</h4>
+            <p class="text-xs text-slate-400">Receiver Operating Characteristic curves demonstrating 0.9775 AUC for Random Forest.</p>
+          </div>
+        </div>
+
+        <!-- Fig 5 -->
+        <div class="glass-card rounded-xl overflow-hidden cursor-pointer group" onclick="openLightbox('/outputs/fig5_feature_importance_report.png', 'Top 15 Permissions Report')">
+          <div class="h-48 overflow-hidden bg-slate-900 flex items-center justify-center relative">
+            <img src="/outputs/fig5_feature_importance_report.png" alt="Top 15 Permissions" class="w-full h-full object-contain group-hover:scale-105 transition duration-300">
+            <div class="absolute inset-0 bg-slate-950/20 group-hover:bg-transparent transition"></div>
+            <span class="absolute bottom-2 right-2 bg-slate-950/80 px-2 py-1 rounded text-[10px] font-mono text-slate-300">Fig 5</span>
+          </div>
+          <div class="p-4 space-y-1">
+            <h4 class="text-sm font-semibold text-white group-hover:text-emerald-400 transition">Detailed Top 15 Permissions</h4>
+            <p class="text-xs text-slate-400">Comprehensive breakdown of all primary discriminative permissions in the report.</p>
+          </div>
+        </div>
+
+        <!-- Fig 6 -->
+        <div class="glass-card rounded-xl overflow-hidden cursor-pointer group" onclick="openLightbox('/outputs/terminal_output_report.png', 'Terminal Pipeline Execution Log')">
+          <div class="h-48 overflow-hidden bg-slate-900 flex items-center justify-center relative">
+            <img src="/outputs/terminal_output_report.png" alt="Terminal Output" class="w-full h-full object-contain group-hover:scale-105 transition duration-300">
+            <div class="absolute inset-0 bg-slate-950/20 group-hover:bg-transparent transition"></div>
+            <span class="absolute bottom-2 right-2 bg-slate-950/80 px-2 py-1 rounded text-[10px] font-mono text-slate-300">Terminal Log</span>
+          </div>
+          <div class="p-4 space-y-1">
+            <h4 class="text-sm font-semibold text-white group-hover:text-emerald-400 transition">Execution Log & Trace</h4>
+            <p class="text-xs text-slate-400">Recorded console output showing dataset loading, data preprocessing, and model scoring.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: DECISION TREE RULES -->
+    <div id="rules-tab" class="tab-content hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i data-lucide="git-branch" class="w-5 h-5 text-emerald-400"></i>
+            Explainable Decision Tree Rules
+          </h2>
+          <p class="text-xs text-slate-400">Human-readable if-then audit rules (top levels) for transparent security verification</p>
+        </div>
+        <button onclick="copyRules()" id="copy-btn" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span id="copy-text">Copy Rules</span>
+        </button>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6 border border-slate-800">
+        <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 font-mono text-xs text-emerald-300 overflow-x-auto max-h-[550px] custom-scrollbar leading-relaxed whitespace-pre" id="rules-pre">{{ rules }}</div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6 border border-slate-800 space-y-3">
+        <h4 class="text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="info" class="w-4 h-4 text-emerald-400"></i>
+          How Security Analysts Use These Rules
+        </h4>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          While the Random Forest produces higher accuracy (92.84%), it acts as an ensemble black box. The Decision Tree rules provide a verifiable audit trail:
+        </p>
+        <ul class="text-xs text-slate-400 space-y-1.5 list-disc pl-5">
+          <li><strong>Root Split:</strong> <code class="text-emerald-400">READ_PHONE_STATE</code> is the single most influential differentiator.</li>
+          <li><strong>Second Level:</strong> Combining phone state with <code class="text-emerald-400">c2dm.permission.RECEIVE</code> separates cloud-push apps from background collectors.</li>
+          <li><strong>Third Level:</strong> Presence of <code class="text-emerald-400">INSTALL_SHORTCUT</code>, <code class="text-emerald-400">BILLING</code>, or <code class="text-emerald-400">SEND_SMS</code> triggers definitive threat branching.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- TAB 4: LIVE APP SCANNER -->
+    <div id="scanner-tab" class="tab-content hidden space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i data-lucide="cpu" class="w-5 h-5 text-emerald-400"></i>
+            Interactive App Permission Scanner
+          </h2>
+          <p class="text-xs text-slate-400">Simulate Android app permission bundles and evaluate against the trained models in real-time</p>
+        </div>
+      </div>
+
+      <!-- Presets Selector -->
+      <div class="glass-card rounded-2xl p-5 space-y-3">
+        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Quick Presets:</div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="loadPreset('calculator')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+            <i data-lucide="calculator" class="w-3.5 h-3.5 text-blue-400"></i> Benign Utility / Calculator
+          </button>
+          <button onclick="loadPreset('messenger')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+            <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-400"></i> Legitimate Chat App
+          </button>
+          <button onclick="loadPreset('adware')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+            <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-400"></i> Aggressive Adware Profile
+          </button>
+          <button onclick="loadPreset('trojan')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+            <i data-lucide="skull" class="w-3.5 h-3.5 text-rose-400"></i> Banking Trojan / Spyware
+          </button>
+          <button onclick="clearAllPermissions()" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs font-medium text-slate-400 border border-slate-800 transition">
+            Clear All
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Permission Checkboxes List -->
+        <div class="lg:col-span-2 glass-card rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-white">Select Permissions (86 Available)</h3>
+            <span id="selected-count" class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono">0 Selected</span>
+          </div>
+
+          <!-- Search Input -->
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none"></i>
+            <input type="text" id="perm-search" oninput="filterPermissions()" placeholder="Search permission (e.g. PHONE, SMS, STORAGE)..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition">
+          </div>
+
+          <!-- Permissions Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar" id="permissions-container">
+            <!-- Dynamically populated or rendered from features -->
+            {% for feat in features %}
+            <label class="perm-item flex items-center gap-2.5 p-2 rounded-lg bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/60 cursor-pointer transition text-xs select-none">
+              <input type="checkbox" value="{{ feat }}" onchange="updateSelectedCount()" class="perm-checkbox rounded border-slate-700 text-emerald-500 focus:ring-emerald-500/20 bg-slate-950 w-3.5 h-3.5">
+              <span class="text-slate-300 font-mono text-[11px] truncate" title="{{ feat }}">{{ feat }}</span>
+            </label>
+            {% endfor %}
+          </div>
+
+          <div class="pt-2">
+            <button onclick="scanApp()" id="scan-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-semibold text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition">
+              <i data-lucide="scan" class="w-4 h-4"></i> Run Malware Prediction
+            </button>
+          </div>
+        </div>
+
+        <!-- Scan Result Card -->
+        <div class="glass-card rounded-2xl p-6 space-y-6 flex flex-col justify-between">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 class="text-sm font-semibold text-white">Live Prediction Output</h3>
+              <span id="result-status-badge" class="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-800 text-slate-400">Awaiting Scan</span>
+            </div>
+
+            <!-- Risk Gauge & Meter -->
+            <div class="text-center py-4 space-y-2">
+              <div class="text-xs text-slate-400 uppercase tracking-wider">Malware Probability Score</div>
+              <div id="risk-score-display" class="text-4xl font-extrabold text-white font-mono">--%</div>
+              <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden p-0.5">
+                <div id="risk-meter-bar" class="h-full rounded-full bg-slate-700 transition-all duration-500" style="width: 0%"></div>
+              </div>
+              <div id="risk-label-display" class="text-xs font-semibold text-slate-400 mt-1">Select permissions and scan</div>
+            </div>
+
+            <!-- Model Details -->
+            <div class="space-y-2 pt-2 border-t border-slate-800 text-xs">
+              <div class="flex justify-between py-1.5 border-b border-slate-800/40">
+                <span class="text-slate-400">Random Forest Ensemble:</span>
+                <span id="rf-result" class="font-mono font-medium text-slate-300">--</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-800/40">
+                <span class="text-slate-400">Decision Tree Rule Match:</span>
+                <span id="dt-result" class="font-mono font-medium text-slate-300">--</span>
+              </div>
+              <div class="flex justify-between py-1.5">
+                <span class="text-slate-400">Active High-Impact Vectors:</span>
+                <span id="active-impact-count" class="font-mono font-medium text-slate-300">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Explanatory note -->
+          <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800/80 text-[11px] text-slate-400 flex items-start gap-2">
+            <i data-lucide="shield" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+            <span>Real-time model inference using scikit-learn pipeline with NATICUSdroid weights.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Image Lightbox Modal -->
+  <div id="lightbox-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden items-center justify-center p-4" onclick="closeLightbox()">
+    <div class="relative max-w-4xl w-full max-h-[90vh] bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 p-2 shadow-2xl" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between p-3 border-b border-slate-800">
+        <h4 id="lightbox-title" class="text-sm font-semibold text-white">Figure Preview</h4>
+        <button onclick="closeLightbox()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-4 flex items-center justify-center overflow-auto max-h-[75vh]">
+        <img id="lightbox-img" src="" alt="Zoomed Figure" class="max-w-full max-h-[70vh] object-contain rounded-lg">
+      </div>
+    </div>
+  </div>
+
+  <footer class="mt-16 border-t border-slate-800/80 bg-slate-950/50 py-6 text-center text-xs text-slate-500">
+    <p>Android Malware Detection Using App Permission Patterns • DMBI Lab Experiment 10 & CA2 Pipeline</p>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('text-emerald-400', 'bg-slate-800', 'border', 'border-emerald-500/30');
+        btn.classList.add('text-slate-400');
+      });
+
+      const activeNav = document.getElementById('nav-' + tabId);
+      if (activeNav) {
+        activeNav.classList.add('text-emerald-400', 'bg-slate-800', 'border', 'border-emerald-500/30');
+        activeNav.classList.remove('text-slate-400');
+      }
+    }
+
+    // Lightbox
+    function openLightbox(src, title) {
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox-title').innerText = title;
+      const modal = document.getElementById('lightbox-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeLightbox() {
+      const modal = document.getElementById('lightbox-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // Rules Copy
+    function copyRules() {
+      const rules = document.getElementById('rules-pre').innerText;
+      navigator.clipboard.writeText(rules);
+      const copyText = document.getElementById('copy-text');
+      copyText.innerText = "Copied!";
+      setTimeout(() => { copyText.innerText = "Copy Rules"; }, 2000);
+    }
+
+    // Search Permissions
+    function filterPermissions() {
+      const query = document.getElementById('perm-search').value.toLowerCase();
+      document.querySelectorAll('.perm-item').forEach(item => {
+        const text = item.innerText.toLowerCase();
+        if (text.includes(query)) {
+          item.style.display = 'flex';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    // Checkbox counter
+    function updateSelectedCount() {
+      const checked = document.querySelectorAll('.perm-checkbox:checked').length;
+      document.getElementById('selected-count').innerText = `${checked} Selected`;
+    }
+
+    // Presets
+    const PRESETS = {
+      calculator: [
+        'android.permission.VIBRATE'
+      ],
+      messenger: [
+        'android.permission.CAMERA',
+        'android.permission.READ_EXTERNAL_STORAGE',
+        'android.permission.WRITE_EXTERNAL_STORAGE',
+        'android.permission.RECORD_AUDIO',
+        'android.permission.VIBRATE',
+        'android.permission.ACCESS_NETWORK_STATE',
+        'android.permission.INTERNET'
+      ],
+      adware: [
+        'android.permission.READ_PHONE_STATE',
+        'com.android.launcher.permission.INSTALL_SHORTCUT',
+        'android.permission.SYSTEM_ALERT_WINDOW',
+        'com.android.vending.BILLING',
+        'android.permission.ACCESS_COARSE_LOCATION'
+      ],
+      trojan: [
+        'android.permission.READ_PHONE_STATE',
+        'android.permission.SEND_SMS',
+        'android.permission.RECEIVE_SMS',
+        'android.permission.RECEIVE_BOOT_COMPLETED',
+        'android.permission.READ_EXTERNAL_STORAGE',
+        'android.permission.WRITE_EXTERNAL_STORAGE',
+        'android.permission.GET_TASKS',
+        'android.permission.SYSTEM_ALERT_WINDOW'
+      ]
+    };
+
+    function loadPreset(key) {
+      clearAllPermissions();
+      const perms = PRESETS[key] || [];
+      document.querySelectorAll('.perm-checkbox').forEach(cb => {
+        if (perms.includes(cb.value)) {
+          cb.checked = true;
+        }
+      });
+      updateSelectedCount();
+      scanApp();
+    }
+
+    function clearAllPermissions() {
+      document.querySelectorAll('.perm-checkbox').forEach(cb => cb.checked = false);
+      updateSelectedCount();
+    }
+
+    // Real-time Prediction Call
+    async function scanApp() {
+      const selected = Array.from(document.querySelectorAll('.perm-checkbox:checked')).map(cb => cb.value);
+      const scanBtn = document.getElementById('scan-btn');
+      scanBtn.disabled = true;
+      scanBtn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Analyzing...`;
+      lucide.createIcons();
+
+      try {
+        const response = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ permissions: selected })
+        });
+        const res = await response.json();
+
+        // Update UI
+        const rf = res.random_forest;
+        const dt = res.decision_tree;
+
+        document.getElementById('risk-score-display').innerText = rf.malware_probability + '%';
+        const meter = document.getElementById('risk-meter-bar');
+        meter.style.width = rf.malware_probability + '%';
+
+        const labelDisplay = document.getElementById('risk-label-display');
+        const badge = document.getElementById('result-status-badge');
+
+        if (rf.risk_color === 'red') {
+          meter.className = 'h-full rounded-full bg-rose-500 transition-all duration-500';
+          labelDisplay.className = 'text-xs font-semibold text-rose-400 mt-1';
+          badge.className = 'px-2 py-0.5 rounded text-[11px] font-mono bg-rose-500/20 text-rose-400 border border-rose-500/30';
+          badge.innerText = 'HIGH RISK MALWARE';
+        } else if (rf.risk_color === 'orange') {
+          meter.className = 'h-full rounded-full bg-amber-500 transition-all duration-500';
+          labelDisplay.className = 'text-xs font-semibold text-amber-400 mt-1';
+          badge.className = 'px-2 py-0.5 rounded text-[11px] font-mono bg-amber-500/20 text-amber-400 border border-amber-500/30';
+          badge.innerText = 'SUSPICIOUS APP';
+        } else if (rf.risk_color === 'yellow') {
+          meter.className = 'h-full rounded-full bg-yellow-500 transition-all duration-500';
+          labelDisplay.className = 'text-xs font-semibold text-yellow-400 mt-1';
+          badge.className = 'px-2 py-0.5 rounded text-[11px] font-mono bg-yellow-500/20 text-yellow-400 border border-yellow-500/30';
+          badge.innerText = 'MODERATE RISK';
+        } else {
+          meter.className = 'h-full rounded-full bg-emerald-500 transition-all duration-500';
+          labelDisplay.className = 'text-xs font-semibold text-emerald-400 mt-1';
+          badge.className = 'px-2 py-0.5 rounded text-[11px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+          badge.innerText = 'BENIGN / SAFE';
+        }
+
+        labelDisplay.innerText = rf.risk_level;
+        document.getElementById('rf-result').innerText = `${rf.prediction_label} (${rf.malware_probability}%)`;
+        document.getElementById('dt-result').innerText = `${dt.prediction_label}`;
+        document.getElementById('active-impact-count').innerText = res.active_permission_count;
+
+      } catch (err) {
+        console.error("Scan error:", err);
+      } finally {
+        scanBtn.disabled = false;
+        scanBtn.innerHTML = `<i data-lucide="scan" class="w-4 h-4"></i> Run Malware Prediction`;
+        lucide.createIcons();
+      }
+    }
+  </script>
+</body>
+</html>
+

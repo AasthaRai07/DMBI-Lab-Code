@@ -1,0 +1,43 @@
+|--- android.permission.READ_PHONE_STATE <= 0.50
+|   |--- com.google.android.c2dm.permission.RECEIVE <= 0.50
+|   |   |--- android.permission.SEND_SMS <= 0.50
+|   |   |   |--- android.permission.READ_EXTERNAL_STORAGE <= 0.50
+|   |   |   |   |--- truncated branch of depth 34
+|   |   |   |--- android.permission.READ_EXTERNAL_STORAGE >  0.50
+|   |   |   |   |--- truncated branch of depth 13
+|   |   |--- android.permission.SEND_SMS >  0.50
+|   |   |   |--- android.permission.RECEIVE_BOOT_COMPLETED <= 0.50
+|   |   |   |   |--- truncated branch of depth 7
+|   |   |   |--- android.permission.RECEIVE_BOOT_COMPLETED >  0.50
+|   |   |   |   |--- truncated branch of depth 2
+|   |--- com.google.android.c2dm.permission.RECEIVE >  0.50
+|   |   |--- android.permission.WRITE_EXTERNAL_STORAGE <= 0.50
+|   |   |   |--- android.permission.VIBRATE <= 0.50
+|   |   |   |   |--- class: 0
+|   |   |   |--- android.permission.VIBRATE >  0.50
+|   |   |   |   |--- truncated branch of depth 16
+|   |   |--- android.permission.WRITE_EXTERNAL_STORAGE >  0.50
+|   |   |   |--- class: 0
+|--- android.permission.READ_PHONE_STATE >  0.50
+|   |--- com.google.android.c2dm.permission.RECEIVE <= 0.50
+|   |   |--- com.android.vending.BILLING <= 0.50
+|   |   |   |--- com.android.launcher.permission.INSTALL_SHORTCUT <= 0.50
+|   |   |   |   |--- truncated branch of depth 28
+|   |   |   |--- com.android.launcher.permission.INSTALL_SHORTCUT >  0.50
+|   |   |   |   |--- truncated branch of depth 15
+|   |   |--- com.android.vending.BILLING >  0.50
+|   |   |   |--- com.android.launcher.permission.INSTALL_SHORTCUT <= 0.50
+|   |   |   |   |--- truncated branch of depth 18
+|   |   |   |--- com.android.launcher.permission.INSTALL_SHORTCUT >  0.50
+|   |   |   |   |--- truncated branch of depth 6
+|   |--- com.google.android.c2dm.permission.RECEIVE >  0.50
+|   |   |--- com.android.launcher.permission.INSTALL_SHORTCUT <= 0.50
+|   |   |   |--- android.permission.READ_EXTERNAL_STORAGE <= 0.50
+|   |   |   |   |--- truncated branch of depth 18
+|   |   |   |--- android.permission.READ_EXTERNAL_STORAGE >  0.50
+|   |   |   |   |--- truncated branch of depth 8
+|   |   |--- com.android.launcher.permission.INSTALL_SHORTCUT >  0.50
+|   |   |   |--- android.permission.READ_EXTERNAL_STORAGE <= 0.50
+|   |   |   |   |--- truncated branch of depth 11
+|   |   |   |--- android.permission.READ_EXTERNAL_STORAGE >  0.50
+|   |   |   |   |--- truncated branch of depth 7
